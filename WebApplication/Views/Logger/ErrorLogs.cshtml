@@ -1,0 +1,160 @@
+﻿
+@{
+    ViewBag.Title = "ErrorLogs";
+    Layout = "~/Views/Shared/MainLayoutPage.cshtml";
+}
+
+<h2>ErrorLogs</h2>
+
+
+
+
+<script type="text/javascript">
+
+
+
+    $(document).ready(function () {
+        GetAllData();
+    });
+
+    function GetAllData() {
+        $("#ErrorLogsTbl").html("");
+        $("#ErrorLogsTbl").append('<table id="ErrorLogs" class="table table-striped hoverTable" ></table>');
+        var $tbl, tbldata;
+
+        if ($tbl != undefined) {
+            $tbl.destroy();
+        }
+        var FilterObj = {};
+
+        $.ajax({
+            type: "POST",
+            dataType: "text",
+            cache: false,
+            url: "/Logger/GetErrorLogsList",
+            async: true,
+            data: JSON.stringify(FilterObj),
+            beforeSend: function () {
+            },
+            success: function (rr) {
+                tbldata = JSON.parse(rr); 
+                $tbl = $('#ErrorLogs').DataTable({
+                    data: tbldata,
+                    serverSide: false, // recommended to use serverSide when data is more than 10000 rows for performance reasons
+                    processing: true, // control the processing indicator.
+                    "bInfo": true,  // control table information display field
+                    stateSave: true,  //restore table state on page reload,
+                    lengthMenu: [[10, 20, 50, 100, -1], [10, 20, 50, 100, "All"]],
+                    order: [[1, "asc"]],
+
+                    language: {
+                        paginate: {
+                            next: "Next" + ' →',
+                            previous: '← ' + "Previous",
+                            first: "First",
+                            last: "Last"
+                        },
+                        "lengthMenu": "RecordsPerPage" + " : _MENU_ ",
+                        "zeroRecords": "NoRecordsAvailable",
+                        "info": "TotalPage" + " :  _PAGES_",
+                        "infoEmpty": "NoRecordsAvailable",
+                        "infoFiltered": "",// "(filtered from _MAX_ total Kayıt)"
+                        "search": "Search"
+                    },
+                    columns: [
+                                {
+                                    title: "CreateDate",
+                                    data: "",
+                                    "render": function (data, type, row, meta) {
+                                        return ConvertToDateTime(row.CreateDate);
+                                    }
+                                },
+                                { title: "LogMsg", data: 'LogMsg' }
+                    ]
+                });
+
+            },
+            error: function (er) {
+
+            }
+        });
+    }
+
+
+    function ConvertToDateTime(item) {
+        if (item == null) {
+            return "";
+        }
+        var lastDate = "";
+        var res = item.split("T");
+        if (res.length == 2) {
+            var dt = ConvertToDate(res[0]);
+            var t = res[1].substring(0, 8);
+            lastDate = dt + " " + t;
+        }
+
+        if (lastDate == "") {
+            return item;
+        }
+        return lastDate;
+
+    }
+
+    function ConvertToDate(item) {
+
+        if (IsENU(item)) {
+            return "";
+        }
+        var regex = /Date\((.*)\)/i
+        var arr = regex.exec(item);
+        var datetime = RegExp.$1;
+        var formatMe = new Date(parseInt(datetime));
+        var retDate = "";
+        if (formatMe = "Invalid Date") {
+            item = new Date(item);
+            retDate += (item.getDate() < 10 ? "0" + item.getDate() : item.getDate());
+            retDate += '.';
+            retDate += ((item.getMonth() + 1) < 10 ? "0" + (item.getMonth() + 1) : (item.getMonth() + 1));
+            retDate += '.';
+            retDate += item.getFullYear();
+            //return retDate; 
+        } else {
+            retDate += (formatMe.getDate() < 10 ? "0" + formatMe.getDate() : formatMe.getDate());
+            retDate += '.';
+            retDate += ((formatMe.getMonth() + 1) < 10 ? "0" + (formatMe.getMonth() + 1) : (formatMe.getMonth() + 1));
+            retDate += '.';
+            retDate += formatMe.getFullYear();
+        }
+
+
+        return retDate;
+
+    }
+    function IsENU(objENU) {
+        if (objENU) {
+            if (objENU.length == 0) {
+                return true;
+            }
+            return false;
+        } else {
+            if (objENU === false || objENU === 0) {
+                return false;
+            }
+            return true;
+        }
+    }
+
+</script>
+
+
+<div class="row">
+
+    <div class="col-md-1"></div>
+
+    <div class="col-md-9">
+        <fieldset id="ErrorLogsTbl">  <table id="ErrorLogs" class="table table-striped hoverTable"></table></fieldset>
+    </div>
+
+</div>
+
+

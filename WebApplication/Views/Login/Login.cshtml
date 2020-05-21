@@ -1,0 +1,52 @@
+﻿
+@{
+    ViewBag.Title = "Login";
+    Layout = "~/Views/Shared/LoginLayoutPage.cshtml";
+}
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+
+
+    });
+
+</script>
+
+<div id="bg" class="col-md-12"></div>
+
+<h2></h2>
+<div class="row">
+    <div class="loginContainer col-md-3">
+
+        <div class="imgcontainer col-md-12">
+            <img src="/Images/Login.png" alt="Login" class="avatar" />
+        </div>
+        <div class="well">
+            @Html.Raw(ViewBag.Message)
+
+
+            @using (Html.BeginForm("Login", "Login", FormMethod.Post, new { id = "frmDataLoginLogin" }))
+            {
+
+                <div class="container col-md-12">
+                    <label data-Lang="Username"><b>Username</b></label>
+                    <input data-Lang="EnterUserName" class="form-control medium" type="text" placeholder="Enter Username" name="UserName" autocomplete="off" required>
+
+                    <label data-Lang="Password"><b>Password</b></label>
+                    <input data-Lang="EnterPassword" class="form-control medium" type="password" placeholder="Enter Password" name="UserPassword" autocomplete="off" required>
+
+                    <input data-Lang="Login" type="submit" name="Login" value="Login" class="button" />
+                </div>
+
+            }
+        </div>
+
+        <a href="@Url.Action("NewUser","Login")">New User</a>
+    </div>
+</div>
+
+
+
+
+

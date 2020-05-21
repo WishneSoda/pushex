@@ -1,0 +1,44 @@
+﻿
+@{
+    ViewBag.Title = "NewTargetApp";
+    Layout = "~/Views/Shared/MainLayoutPage.cshtml";
+}
+
+<h2>NewTargetApp</h2>
+
+<div class="row">
+    <div class="col-md-2"></div>
+    <div class="col-md-10">
+        <form id=@string.Format("{0}{1}{2}", "frmData", @ViewBag.Modules, "CompanyGeo")>
+            <input name="ID" type="hidden" value="0" required />
+
+
+            <label>Name</label>
+            <input name="Name" placeholder="Name" class="form-control big" type="text" required />
+
+
+            <label>TargetUrl</label>
+            <input name="TargetUrl" placeholder="Target Url" class="form-control big" type="text" required />
+
+            <label>IntervalType</label>
+            <select class="bigSelect" name="IntervalType" required>
+                <option value="">Please Select</option>
+                <option value="H">Hour</option>
+                <option value="M">Minutes</option>
+                <option value="S">Second</option>
+            </select>
+
+            <label>TimeInterval</label>
+            <input name="TimeInterval" placeholder="Time Interval" class="form-control big" type="text" required />
+            <br /> 
+        </form>
+        <div class="col-md-12">
+            <div id=@string.Format("{0}{1}{2}", "frmbtn", @ViewBag.Modules, @ViewBag.Modules) class="row  divButtons">
+                <button data-Lang="save" type="button" class="btn btn-success mr-3" onclick="btnSave(this,'@ViewBag.Modules','@ViewBag.Modules', GetAllDataCompany,[GetpGuid(this)])">Kaydet</button>
+                <button data-Lang="cancel" type="button" class="btn btn-warning mr-3" onclick="btnCancel(this,'@ViewBag.Modules','@ViewBag.Modules')">Vazgeç</button>
+                <button data-Lang="delete" type="button" class="btn btn-danger" onclick="btnDelete(this,'@ViewBag.Modules','@ViewBag.Modules', GetAllDataCompany,[GetpGuid(this)])">SİL</button>
+            </div>
+        </div>
+    </div>
+</div>
+

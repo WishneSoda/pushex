@@ -1,0 +1,200 @@
+﻿
+@{
+    ViewBag.Title = "TargetApps";
+    Layout = "~/Views/Shared/MainLayoutPage.cshtml";
+}
+
+
+<script type="text/javascript">
+
+
+
+    $(document).ready(function () {
+        GetAllData();
+    });
+
+    function GetAllData() {
+        $("#TargetAppTbl").html("");
+        $("#TargetAppTbl").append('<table id="TargetApp" class="table table-striped hoverTable" ></table>');
+        var $tbl, tbldata;
+
+        if ($tbl != undefined) {
+            $tbl.destroy();
+        }
+        var FilterObj = {};
+
+        $.ajax({
+            type: "POST",
+            dataType: "text",
+            cache: false,
+            url: "/Home/GetTargetAppList",
+            async: true,
+            data: JSON.stringify(FilterObj),
+            beforeSend: function () {
+            },
+            success: function (rr) {
+                tbldata = JSON.parse(rr);
+                $tbl = $('#TargetApp').DataTable({
+                    data: tbldata,
+                    serverSide: false, // recommended to use serverSide when data is more than 10000 rows for performance reasons
+                    processing: true, // control the processing indicator.
+                    "bInfo": true,  // control table information display field
+                    stateSave: true,  //restore table state on page reload,
+                    lengthMenu: [[10, 20, 50, 100, -1], [10, 20, 50, 100, "All"]],
+                    order: [[1, "asc"]],
+
+                    language: {
+                        paginate: {
+                            next: "Next" + ' →',
+                            previous: '← ' + "Previous",
+                            first: "First",
+                            last: "Last"
+                        },
+                        "lengthMenu": "RecordsPerPage" + " : _MENU_ ",
+                        "zeroRecords": "NoRecordsAvailable",
+                        "info": "TotalPage" + " :  _PAGES_",
+                        "infoEmpty": "NoRecordsAvailable",
+                        "infoFiltered": "",// "(filtered from _MAX_ total Kayıt)"
+                        "search": "Search"
+                    },
+                    columns: [
+                                { title: "Name", data: 'Name' },
+                                { title: "TargetUrl", data: 'TargetUrl' },
+                                { title: "IntervalType", data: 'IntervalType' },
+                                { title: "TimeInterval", data: 'TimeInterval' },
+                                {
+                                    title: "",
+                                    data: "",
+                                    "render": function (data, type, row, meta) {
+                                        return ' <button  onclick="DeleteTargetApp(' + row.ID + ')"> Delete App </button>' + ' <button  onclick="EditTargetApp(' + row.ID + ')"> Edit App </button>';
+                                    }
+                                }
+
+                    ]
+                });
+
+            },
+            error: function (er) {
+
+            }
+        });
+    }
+
+
+    function DeleteTargetApp(_id) {
+        var r = confirm("SİLMEK İSTİYORMUSUNUZ");
+        if (r == true) {
+            FilterObj = { ID: _id };
+            $.ajax({
+                type: "POST",
+                dataType: "text",
+                cache: false,
+                url: "/Home/DeleteTargetApps",
+                async: true,
+                data: JSON.stringify(FilterObj),
+                beforeSend: function () {
+                },
+                success: function (rr) {
+                    GetAllData();
+                },
+                error: function (er) {
+
+                }
+            });
+        }
+    }
+
+    function EditTargetApp(_RowID) {
+        var _Data = $("#TargetApp").DataTable().data();
+
+        var _RowData = $.grep(_Data, function (e) {
+            return (e.ID == _RowID);
+        });
+        if (_RowData.length == 1) {
+            $("#TargetAppForm" + " input[name='ID']").val(_RowData[0].ID);
+            $("#TargetAppForm" + " input[name='Name']").val(_RowData[0].Name);
+            $("#TargetAppForm" + " input[name='TargetUrl']").val(_RowData[0].TargetUrl);
+            $("#TargetAppForm" + " select[name='IntervalType']").val(_RowData[0].IntervalType).trigger('change');
+            $("#TargetAppForm" + " input[name='TimeInterval']").val(_RowData[0].TimeInterval);
+        }
+
+    }
+
+
+    function TargetAppCancel() {
+        $("#TargetAppForm" + " input[name='ID']").val(0);
+        $("#TargetAppForm" + " input[name='Name']").val("");
+        $("#TargetAppForm" + " input[name='TargetUrl']").val("");
+        $("#TargetAppForm" + " select[name='IntervalType']").val("").trigger('change');
+        $("#TargetAppForm" + " input[name='TimeInterval']").val("");
+    }
+
+    function SaveTargetApp() {
+        FilterObj = { JsonForm: $($("#TargetAppForm")).serializeObject() };
+        $.ajax({
+            type: "POST",
+            dataType: "text",
+            cache: false,
+            url: "/Home/SaveTargetApps",
+            async: true,
+            data: JSON.stringify(FilterObj),
+            beforeSend: function () {
+            },
+            success: function (rr) {
+                GetAllData();
+                TargetAppCancel();
+            },
+            error: function (er) {
+
+            }
+        });
+    }
+
+
+</script>
+
+
+
+
+
+<div class="row">
+
+    <div class="col-md-1"></div>
+
+    <div class="col-md-7">
+        <fieldset id="TargetAppTbl">  <table id="TargetApp" class="table table-striped hoverTable"></table></fieldset>
+    </div>
+
+    <div class="col-md-4">
+        <fieldset>
+            <form id="TargetAppForm">
+                <input name="ID" type="hidden" value="0" required />
+                <label>Name</label>
+                <input name="Name" placeholder="Name" class="form-control big" type="text" required />
+                <label>TargetUrl</label>
+                <input name="TargetUrl" placeholder="https://www.websitename.com.tr/" class="form-control big" type="text" required />
+                <label>IntervalType</label>
+                <select class="bigSelect" name="IntervalType" required>
+                    <option value="">Please Select</option>
+                    <option value="H">Hour</option>
+                    <option value="M">Minutes</option>
+                    <option value="S">Second</option>
+                </select>
+
+                <label>TimeInterval</label>
+                <input name="TimeInterval" placeholder="Time Interval" class="form-control big" type="text" required />
+                <br />
+
+            </form>
+            <div class="col-md-12">
+                <div class="row">
+                    <button data-Lang="save" type="button" class="btn btn-success mr-3" onclick="SaveTargetApp()">Kaydet</button>
+                    <button data-Lang="cancel" type="button" class="btn btn-warning mr-3" onclick="TargetAppCancel()">Vazgeç</button>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+
+</div>
+
+

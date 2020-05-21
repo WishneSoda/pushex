@@ -1,0 +1,221 @@
+﻿
+@{
+    ViewBag.Title = "EmailSettings";
+    Layout = "~/Views/Shared/MainLayoutPage.cshtml";
+}
+
+
+
+<script type="text/javascript">
+
+
+
+    $(document).ready(function () {
+        GetAllData();
+    });
+
+    function GetAllData() {
+        $("#EmailSettingsTbl").html("");
+        $("#EmailSettingsTbl").append('<table id="EmailSettings" class="table table-striped hoverTable" ></table>');
+        var $tbl, tbldata;
+
+        if ($tbl != undefined) {
+            $tbl.destroy();
+        }
+        var FilterObj = {};
+
+        $.ajax({
+            type: "POST",
+            dataType: "text",
+            cache: false,
+            url: "/Home/GetEmailSettingsList",
+            async: true,
+            data: JSON.stringify(FilterObj),
+            beforeSend: function () {
+            },
+            success: function (rr) {
+                tbldata = JSON.parse(rr);
+                $tbl = $('#EmailSettings').DataTable({
+                    data: tbldata,
+                    serverSide: false, // recommended to use serverSide when data is more than 10000 rows for performance reasons
+                    processing: true, // control the processing indicator.
+                    "bInfo": true,  // control table information display field
+                    stateSave: true,  //restore table state on page reload,
+                    lengthMenu: [[10, 20, 50, 100, -1], [10, 20, 50, 100, "All"]],
+                    order: [[1, "asc"]],
+
+                    language: {
+                        paginate: {
+                            next: "Next" + ' →',
+                            previous: '← ' + "Previous",
+                            first: "First",
+                            last: "Last"
+                        },
+                        "lengthMenu": "RecordsPerPage" + " : _MENU_ ",
+                        "zeroRecords": "NoRecordsAvailable",
+                        "info": "TotalPage" + " :  _PAGES_",
+                        "infoEmpty": "NoRecordsAvailable",
+                        "infoFiltered": "",// "(filtered from _MAX_ total Kayıt)"
+                        "search": "Search"
+                    },
+                    columns: [
+                                { title: "SmtpServer", data: 'SmtpServer' },
+                                { title: "MailSubject", data: 'MailSubject' },
+                                { title: "FromMail", data: 'FromMail' },
+                                {
+                                    title: "FromMailPassword",
+                                    data: "",
+                                    "render": function (data, type, row, meta) {
+                                        return '****';
+                                    }
+                                },
+                                { title: "ToMail", data: 'ToMail' },
+                                { title: "Port", data: 'Port' },
+                                {
+                                    title: "",
+                                    data: "",
+                                    "render": function (data, type, row, meta) {
+                                        return ' <button  onclick="DeleteEmailSettings(' + row.ID + ')"> Delete </button>' + ' <button  onclick="EditEmailSettings(' + row.ID + ')"> Edit </button>';
+                                    }
+                                }
+
+                    ]
+                });
+
+            },
+            error: function (er) {
+
+            }
+        });
+    }
+
+
+    function DeleteEmailSettings(_id) {
+        var r = confirm("SİLMEK İSTİYORMUSUNUZ");
+        if (r == true) {
+            FilterObj = { ID: _id };
+            $.ajax({
+                type: "POST",
+                dataType: "text",
+                cache: false,
+                url: "/Home/DeleteEmailSettings",
+                async: true,
+                data: JSON.stringify(FilterObj),
+                beforeSend: function () {
+                },
+                success: function (rr) {
+                    GetAllData();
+                },
+                error: function (er) {
+
+                }
+            });
+        }
+    }
+
+    function EditEmailSettings(_RowID) {
+        var _Data = $("#EmailSettings").DataTable().data();
+
+        var _RowData = $.grep(_Data, function (e) {
+            return (e.ID == _RowID);
+        });
+        if (_RowData.length == 1) {
+            $("#EmailSettingsForm" + " input[name='ID']").val(_RowData[0].ID);
+            $("#EmailSettingsForm" + " input[name='SmtpServer']").val(_RowData[0].SmtpServer);
+            $("#EmailSettingsForm" + " input[name='MailSubject']").val(_RowData[0].MailSubject); 
+            $("#EmailSettingsForm" + " input[name='FromMail']").val(_RowData[0].FromMail);
+            $("#EmailSettingsForm" + " input[name='ToMail']").val(_RowData[0].ToMail);
+            $("#EmailSettingsForm" + " input[name='FromMailPassword']").val(_RowData[0].FromMailPassword);
+            $("#EmailSettingsForm" + " input[name='Port']").val(_RowData[0].Port);
+        }
+
+    }
+
+
+    function EmailSettingsCancel() {
+        $("#EmailSettingsForm" + " input[name='ID']").val(0);
+        $("#EmailSettingsForm" + " input[name='SmtpServer']").val("");
+        $("#EmailSettingsForm" + " input[name='MailSubject']").val(""); 
+        $("#EmailSettingsForm" + " input[name='FromMail']").val("");
+        $("#EmailSettingsForm" + " input[name='ToMail']").val("");
+        $("#EmailSettingsForm" + " input[name='FromMailPassword']").val("");
+        $("#EmailSettingsForm" + " input[name='Port']").val("");
+    }
+
+    function SaveEmailSettings() {
+        FilterObj = { JsonForm: $($("#EmailSettingsForm")).serializeObject() };
+        $.ajax({
+            type: "POST",
+            dataType: "text",
+            cache: false,
+            url: "/Home/SaveEmailSettings",
+            async: true,
+            data: JSON.stringify(FilterObj),
+            beforeSend: function () {
+            },
+            success: function (rr) {
+                GetAllData();
+                EmailSettingsCancel();
+            },
+            error: function (er) {
+
+            }
+        });
+    }
+
+
+</script>
+
+
+
+
+<h2>EmailSettings</h2>
+
+
+
+<div class="row">
+
+    <div class="col-md-1"></div>
+
+    <div class="col-md-9">
+        <fieldset id="EmailSettingsTbl">  <table id="EmailSettings" class="table table-striped hoverTable"></table></fieldset>
+    </div>
+
+    <div class="col-md-2">
+        <fieldset>
+            <form id="EmailSettingsForm">
+                <input name="ID" type="hidden" value="0" required />
+                <label>SmtpServer</label>
+                <input name="SmtpServer" placeholder="SmtpServer" class="form-control big" type="text" required />
+
+                <label>MailSubject</label>
+                <input name="MailSubject" placeholder="MailSubject" class="form-control big" type="text" required />
+
+                <label>FromMail</label>
+                <input name="FromMail" placeholder="FromMail" class="form-control big" type="text" required />
+
+                <label>FromMailPassword</label>
+                <input name="FromMailPassword" placeholder="FromMailPassword" class="form-control big" type="text" required />
+
+
+                <label>ToMail</label>
+                <input name="ToMail" placeholder="ToMail" class="form-control big" type="text" required />
+
+                <label>Port</label>
+                <input name="Port" placeholder="Port" class="form-control big" type="text" required />
+                
+                <br />
+
+            </form>
+            <div class="col-md-12">
+                <div class="row">
+                    <button data-Lang="save" type="button" class="btn btn-success mr-3" onclick="SaveEmailSettings()">Kaydet</button>
+                    <button data-Lang="cancel" type="button" class="btn btn-warning mr-3" onclick="EmailSettingsCancel()">Vazgeç</button>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+
+</div>
+
+

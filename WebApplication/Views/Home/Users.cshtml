@@ -1,0 +1,187 @@
+﻿
+@{
+    ViewBag.Title = "Users";
+    Layout = "~/Views/Shared/MainLayoutPage.cshtml";
+}
+
+
+<script type="text/javascript">
+
+
+
+    $(document).ready(function () {
+        GetAllData();
+    });
+
+    function GetAllData() {
+        $("#UserTbl").html("");
+        $("#UserTbl").append('<table id="' + 'Users' + '" class="table table-striped hoverTable" ></table>');
+        var $tbl, tbldata;
+
+        if ($tbl != undefined) {
+            $tbl.destroy();
+        }
+        var FilterObj = {};
+
+        $.ajax({
+            type: "POST",
+            dataType: "text",
+            cache: false,
+            url: "/Home/GetUsers",
+            async: true,
+            data: JSON.stringify(FilterObj),
+            beforeSend: function () {
+            },
+            success: function (rr) {
+                tbldata = JSON.parse(rr);
+                $tbl = $('#Users').DataTable({
+                    data: tbldata,
+                    serverSide: false, // recommended to use serverSide when data is more than 10000 rows for performance reasons
+                    processing: true, // control the processing indicator.
+                    "bInfo": true,  // control table information display field
+                    stateSave: true,  //restore table state on page reload,
+                    lengthMenu: [[10, 20, 50, 100, -1], [10, 20, 50, 100, "All"]],
+                    order: [[1, "asc"]],
+
+                    language: {
+                        paginate: {
+                            next: "Next" + ' →',
+                            previous: '← ' + "Previous",
+                            first: "First",
+                            last: "Last"
+                        },
+                        "lengthMenu": "RecordsPerPage" + " : _MENU_ ",
+                        "zeroRecords": "NoRecordsAvailable",
+                        "info": "TotalPage" + " :  _PAGES_",
+                        "infoEmpty": "NoRecordsAvailable",
+                        "infoFiltered": "",// "(filtered from _MAX_ total Kayıt)"
+                        "search": "Search"
+                    },
+                    columns: [
+                                { title: "UserName", data: 'UserName' },
+                                { title: "UserPassword", data: 'UserPassword' },
+                                {
+                                    title: "",
+                                    data: "",
+                                    "render": function (data, type, row, meta) {
+                                        return ' <button  onclick="DeleteUser(' + row.ID + ')"> Delete User </button>' + ' <button  onclick="EditUser(' + row.ID + ')"> Edit User </button>';
+                                    }
+                                }
+
+                    ]
+                });
+
+            },
+            error: function (er) {
+
+            }
+        });
+    }
+
+
+    function DeleteUser(_id) {
+        var r = confirm("SİLMEK İSTİYORMUSUNUZ");
+        if (r == true) {
+            FilterObj = { ID: _id };
+            $.ajax({
+                type: "POST",
+                dataType: "text",
+                cache: false,
+                url: "/Home/DeleteUsers",
+                async: true,
+                data: JSON.stringify(FilterObj),
+                beforeSend: function () {
+                },
+                success: function (rr) {
+                    GetAllData();
+                },
+                error: function (er) {
+
+                }
+            });
+        }
+    }
+
+    function EditUser(_RowID) {
+        var _Data = $("#Users").DataTable().data();
+
+        var _RowData = $.grep(_Data, function (e) {
+            return (e.ID == _RowID);
+        });
+        if (_RowData.length == 1) {
+            $("#UsersForm" + " input[name='ID']").val(_RowData[0].ID);
+            $("#UsersForm" + " input[name='UserName']").val(_RowData[0].UserName);
+            $("#UsersForm" + " input[name='UserPassword']").val(_RowData[0].UserPassword);
+        }
+
+    }
+
+
+    function UserCancel() {
+        $("#UsersForm" + " input[name='ID']").val(0);
+        $("#UsersForm" + " input[name='UserName']").val("");
+        $("#UsersForm" + " input[name='UserPassword']").val("");
+    }
+
+    function SaveUser() {
+        FilterObj = { JsonForm: $($("#UsersForm")).serializeObject() };
+        $.ajax({
+            type: "POST",
+            dataType: "text",
+            cache: false,
+            url: "/Home/SaveUsers",
+            async: true,
+            data: JSON.stringify(FilterObj),
+            beforeSend: function () {
+            },
+            success: function (rr) {
+                GetAllData();
+                UserCancel();
+            },
+            error: function (er) {
+
+            }
+        });
+    }
+
+
+</script>
+
+
+
+
+
+
+<h2>Users</h2>
+
+<div class="row">
+
+    <div class="col-md-1"></div>
+
+    <div class="col-md-7">
+        <fieldset id="UserTbl">  <table id="Users" class="table table-striped hoverTable"></table></fieldset>
+    </div>
+
+    <div class="col-md-4">
+        <fieldset>
+            <form id="UsersForm">
+                <input name="ID" type="hidden" value="0" required />
+
+                <label>UserName</label>
+                <input name="UserName" placeholder="User Name" class="form-control big" type="text" required />
+
+                <label>UserPassword</label>
+                <input name="UserPassword" placeholder="User Password" class="form-control big" type="text" required />
+
+                <br />
+            </form>
+            <div class="col-md-12">
+                <div class="row">
+                    <button data-Lang="save" type="button" class="btn btn-success mr-3" onclick="SaveUser()">Kaydet</button>
+                    <button data-Lang="cancel" type="button" class="btn btn-warning mr-3" onclick="UserCancel()">Vazgeç</button> 
+                </div>
+            </div>
+        </fieldset>
+    </div>
+
+</div>
